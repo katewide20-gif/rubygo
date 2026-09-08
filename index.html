@@ -203,7 +203,7 @@
     <div class="steps">
       <div class="step"><div class="step-mark">1</div><h3>Sign up</h3><p>Create your Ruby account once — no need to retype your details every trip.</p></div>
       <div class="step"><div class="step-mark">2</div><h3>Book a trip</h3><p>Tell us your pickup, drop-off, and what you need.</p></div>
-      <div class="step"><div class="step-mark">3</div><h3>We confirm on WhatsApp</h3><p>We reply within minutes with a rider and price.</p></div>
+      <div class="step"><div class="step-mark">3</div><h3>We match you with a rider</h3><p>Track your trip and chat with your rider, right here on the site.</p></div>
     </div>
   </div>
 </section>
@@ -341,7 +341,7 @@
       </div>
       <div><label for="when">When do you need it?</label><input type="text" id="when" required placeholder="e.g. Now, or Today 4pm"></div>
       <div><label for="notes">Anything else? (optional)</label><textarea id="notes"></textarea></div>
-      <p class="success-msg" id="bookSuccess">Booking saved! Opening WhatsApp to confirm...</p>
+      <p class="success-msg" id="bookSuccess">Booking saved! A rider will pick it up shortly — check "Activity" for updates and chat.</p>
       <button type="submit" class="submit-btn">Send booking</button>
     </form>
 
@@ -666,16 +666,6 @@
 
     document.getElementById('bookSuccess').style.display = 'block';
 
-    let message = `Hi Ruby, I'd like to book a trip.%0A%0A`;
-    message += `Service: ${service}%0A`;
-    message += `Pickup: ${pickup}%0A`;
-    message += `Drop-off: ${dropoff}%0A`;
-    message += `When: ${when}%0A`;
-    if (notes) message += `Notes: ${notes}%0A`;
-    setTimeout(() => {
-      window.open(`https://wa.me/2349164510564?text=${message}`, '_blank');
-    }, 800);
-
     e.target.reset();
     document.getElementById('fareEstimate').style.display = 'none';
     loadTripHistory();
@@ -724,6 +714,7 @@
         }
         card.appendChild(starsWrap);
         if (b.riderUid) {
+          attachCallButton(card, b.riderPhone, b.riderName);
           attachTrackMap(card, docSnap.id);
           attachChat(card, docSnap.id);
         }
@@ -772,7 +763,8 @@
     await updateDoc(doc(db, "bookings", bookingId), {
       status: "claimed",
       riderUid: currentUser.uid,
-      riderName: (currentProfile && currentProfile.name) || 'Your rider'
+      riderName: (currentProfile && currentProfile.name) || 'Your rider',
+      riderPhone: (currentProfile && currentProfile.phone) || ''
     });
     loadAvailableTrips();
     loadMyTrips();
@@ -841,6 +833,17 @@
     } catch (err) {
       console.error("My trips query needs an index. Check console for a Firestore link:", err);
     }
+  }
+
+  function attachCallButton(container, phone, riderName){
+    if (!phone) return;
+    const callBtn = document.createElement('a');
+    callBtn.href = `tel:${phone}`;
+    callBtn.className = 'chat-toggle';
+    callBtn.style.display = 'inline-block';
+    callBtn.style.textDecoration = 'none';
+    callBtn.textContent = `📞 Call ${escapeHtml(riderName || 'rider')}`;
+    container.appendChild(callBtn);
   }
 
   function attachChat(container, bookingId){
