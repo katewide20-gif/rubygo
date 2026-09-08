@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ruby — Rides & Errands, Ogba & Aguda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Replace YOUR_MAPS_API_KEY below once you have a Google Maps API key (see README) -->
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_MAPS_API_KEY" async defer></script>
+<style>
+  :root{
+    --sky: #2FA8E0;
+    --sky-deep: #1E7FAE;
+    --sky-light: #EAF6FD;
+    --charcoal: #263241;
+    --sand: #EAF2F8;
+    --sand-deep: #DCE8F2;
+    --gold: #6CC6F0;
+    --cream: #FFFFFF;
+    --ink-soft: #64748B;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Manrope',sans-serif;background:var(--cream);color:var(--charcoal);line-height:1.5;}
+  h1,h2,h3{font-family:'Sora',sans-serif;margin:0;letter-spacing:-0.01em;}
+  a{color:inherit;}
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px;}
+  header{position:sticky;top:0;z-index:10;background:var(--cream);border-bottom:1px solid rgba(38,50,65,0.08);}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;max-width:960px;margin:0 auto;}
+  .logo{font-family:'Sora',sans-serif;font-weight:800;font-size:22px;color:var(--sky);}
+  .nav .nav-right{display:flex;gap:10px;align-items:center;}
+  .nav a.cta, .nav button.cta{background:var(--sky);color:#fff;padding:10px 18px;border-radius:6px;font-weight:600;font-size:14px;text-decoration:none;border:none;cursor:pointer;font-family:inherit;}
+  .nav .ghost{background:transparent;color:var(--charcoal);border:1px solid rgba(38,50,65,0.2);}
+  .hero{background:linear-gradient(135deg,var(--sky) 0%,var(--sky-deep) 100%);color:#fff;padding:56px 24px 48px;position:relative;overflow:hidden;}
+  .hero::before{content:"";position:absolute;right:-80px;top:-80px;width:280px;height:280px;border-radius:50%;background:#fff;opacity:0.12;}
+  .hero-inner{max-width:960px;margin:0 auto;position:relative;}
+  .hero h1{font-size:clamp(32px,6vw,52px);max-width:11ch;color:#fff;}
+  .hero h1 span{color:var(--charcoal);}
+  .hero p{margin-top:18px;font-size:18px;max-width:42ch;color:rgba(255,255,255,0.9);}
+  .hero-areas{margin-top:28px;display:flex;gap:10px;flex-wrap:wrap;}
+  .pill{border:1px solid rgba(255,255,255,0.45);padding:6px 14px;border-radius:999px;font-size:13px;color:#fff;}
+  .hero-btn{display:inline-block;margin-top:32px;background:#fff;color:var(--sky-deep);padding:14px 26px;border-radius:6px;font-weight:700;font-size:16px;text-decoration:none;border:none;cursor:pointer;font-family:inherit;}
+  .hero-graphic{margin-top:36px;display:flex;gap:18px;flex-wrap:wrap;align-items:flex-end;}
+  .hero-graphic svg{display:block;}
+  section{padding:56px 24px;}
+  .section-title{font-size:28px;margin-bottom:8px;}
+  .section-lead{color:var(--ink-soft);max-width:52ch;margin-top:6px;}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:32px;}
+  @media (max-width:720px){.cards{grid-template-columns:1fr;}}
+  .card{background:var(--sand);padding:22px;border-radius:8px;border-left:4px solid var(--sky);}
+  .card h3{font-size:18px;margin-bottom:6px;}
+  .card p{font-size:14px;color:var(--ink-soft);margin:0;}
+  .card .price{margin-top:14px;font-weight:700;color:var(--sky-deep);font-size:15px;}
+  .auth-section{background:var(--sand-deep);}
+  .auth-tabs{display:flex;gap:8px;margin-top:24px;}
+  .auth-tab{padding:10px 20px;border-radius:6px;border:1px solid rgba(38,50,65,0.15);background:#fff;cursor:pointer;font-weight:600;font-size:14px;font-family:inherit;}
+  .auth-tab.active{background:var(--sky);color:#fff;border-color:var(--sky);}
+  form{margin-top:24px;background:#fff;color:var(--charcoal);padding:28px;border-radius:10px;display:grid;gap:16px;max-width:480px;box-shadow:0 1px 3px rgba(38,50,65,0.08);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media (max-width:600px){.row2{grid-template-columns:1fr;}}
+  label{font-size:13px;font-weight:600;display:block;margin-bottom:6px;color:var(--ink-soft);}
+  input, select, textarea{width:100%;padding:11px 12px;border:1px solid rgba(38,50,65,0.18);border-radius:6px;font-family:'Manrope',sans-serif;font-size:15px;background:#fff;color:var(--charcoal);}
+  textarea{resize:vertical;min-height:70px;}
+  .submit-btn{background:var(--sky);color:#fff;border:none;padding:14px 20px;border-radius:6px;font-weight:700;font-size:16px;cursor:pointer;margin-top:4px;font-family:inherit;}
+  .submit-btn:hover{background:var(--sky-deep);}
+  .ghost-btn{background:transparent;border:1px solid rgba(38,50,65,0.2);color:var(--charcoal);padding:10px 14px;border-radius:6px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;}
+  .form-note{font-size:13px;color:var(--ink-soft);margin-top:-4px;}
+  .error-msg{color:#C0392B;font-size:13px;font-weight:600;display:none;}
+  .success-msg{color:#2E6B3E;font-size:13px;font-weight:600;display:none;}
+  .book{background:var(--sand-deep);color:var(--charcoal);}
+  .book .section-lead{color:var(--ink-soft);}
+  .steps{display:flex;gap:24px;margin-top:32px;flex-wrap:wrap;}
+  .step{flex:1;min-width:200px;}
+  .step-mark{width:34px;height:34px;border-radius:50%;background:var(--sky);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;margin-bottom:12px;}
+  .step h3{font-size:16px;margin-bottom:4px;}
+  .step p{font-size:14px;color:var(--ink-soft);margin:0;}
+  .how{background:var(--sand);}
+  .welcome-bar{background:var(--sky-light);color:var(--sky-deep);padding:12px 24px;text-align:center;font-weight:600;font-size:14px;display:none;}
+  footer{padding:40px 24px;text-align:center;background:#fff;border-top:1px solid rgba(38,50,65,0.08);}
+  footer p{font-size:14px;color:var(--ink-soft);margin:4px 0;}
+  footer a{color:var(--sky-deep);font-weight:600;text-decoration:none;}
+  .hidden{display:none !important;}
+
+  .quick-addr{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:-4px;}
+  .fare-estimate{background:var(--sky-light);color:var(--sky-deep);padding:10px 14px;border-radius:6px;font-size:13px;font-weight:600;display:none;}
+  .account-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px;}
+  @media (max-width:800px){.account-grid{grid-template-columns:1fr;}}
+  .history-list{display:grid;gap:12px;margin-top:16px;}
+  .history-card{background:#fff;border:1px solid rgba(38,50,65,0.1);border-radius:8px;padding:16px;color:var(--charcoal);}
+  .history-top{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px;}
+  .history-service{font-weight:700;font-size:14px;}
+  .history-status{font-size:12px;padding:3px 10px;border-radius:999px;background:var(--sky-light);color:var(--sky-deep);font-weight:600;}
+  .history-route{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+  .stars{display:flex;gap:4px;margin-top:10px;}
+  .star{font-size:20px;cursor:pointer;color:#C7D2DE;}
+  .star.filled{color:var(--sky);}
+  .star.locked{cursor:default;}
+  .empty-note{font-size:13px;color:var(--ink-soft);margin-top:12px;}
+
+  .safety-list{margin-top:10px;padding-left:18px;color:var(--ink-soft);font-size:13px;line-height:1.7;}
+
+  .claim-btn{background:var(--sky);color:#fff;border:none;padding:8px 16px;border-radius:6px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;margin-top:10px;}
+  .chat-toggle{background:transparent;border:1px solid rgba(38,50,65,0.2);color:var(--sky-deep);padding:6px 12px;border-radius:6px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;margin-top:10px;}
+  .chat-panel{margin-top:10px;border:1px solid rgba(38,50,65,0.12);border-radius:8px;padding:10px;background:var(--sky-light);}
+  .chat-messages{max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:8px;}
+  .chat-bubble{max-width:80%;padding:8px 12px;border-radius:10px;font-size:13px;background:#fff;align-self:flex-start;}
+  .chat-bubble.mine{background:var(--sky);color:#fff;align-self:flex-end;}
+  .chat-row{display:flex;gap:8px;}
+  .chat-row input{flex:1;}
+  .chat-row button{background:var(--sky);color:#fff;border:none;padding:0 14px;border-radius:6px;font-weight:600;cursor:pointer;font-family:inherit;}
+
+  body{padding-bottom:68px;}
+  .bottom-tabs{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid rgba(38,50,65,0.1);display:flex;justify-content:space-around;padding:8px 0 max(8px,env(safe-area-inset-bottom));z-index:20;}
+  .tab-item{background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:inherit;font-size:11px;font-weight:600;color:var(--ink-soft);cursor:pointer;padding:4px 12px;}
+  .tab-item.active{color:var(--sky);}
+  .tab-item svg{width:22px;height:22px;}
+
+  .where-to{background:#fff;border-radius:10px;padding:16px 18px;margin-top:28px;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,0.08);max-width:420px;border:none;font-family:inherit;text-align:left;}
+  .where-to span{font-weight:700;color:var(--charcoal);font-size:16px;}
+  .where-to small{display:block;color:var(--ink-soft);font-weight:400;font-size:13px;margin-top:2px;}
+
+  .acct-list{margin-top:20px;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(38,50,65,0.08);max-width:480px;}
+  .acct-row{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid rgba(38,50,65,0.08);cursor:pointer;background:none;width:100%;font-family:inherit;font-size:15px;font-weight:600;color:var(--charcoal);text-align:left;}
+  .acct-row:last-child{border-bottom:none;}
+  .acct-row .chev{color:var(--ink-soft);font-size:18px;}
+  .acct-panel{max-width:480px;}
+  .acct-panel.hidden{display:none;}
+</style>
+</head>
+<body>
+
+<header id="topAnchor">
+  <div class="nav">
+    <div class="logo">Ruby</div>
+    <div class="nav-right">
+      <a class="cta ghost" href="#account" id="navAccountBtn">Sign up / Log in</a>
+      <button class="cta hidden" id="navLogoutBtn">Log out</button>
+    </div>
+  </div>
+</header>
+
+<div class="welcome-bar" id="welcomeBar"></div>
+
+<section class="hero">
+  <div class="hero-inner">
+    <h1>Rides and errands, <span>run right here in Ogba & Aguda.</span></h1>
+    <p>Book a bike, keke, car, or errand run in minutes. A real person confirms every trip.</p>
+    <div class="hero-areas">
+      <span class="pill">Ogba</span>
+      <span class="pill">Aguda</span>
+      <span class="pill">Ikeja environs</span>
+    </div>
+    <a class="hero-btn" href="#account">Get started</a>
+
+    <button type="button" class="where-to" onclick="document.getElementById('account').scrollIntoView({behavior:'smooth'})">
+      <span>🔍 Where to?<small>Tap to book a ride or errand</small></span>
+    </button>
+
+    <div class="hero-graphic" aria-hidden="true">
+      <svg width="150" height="70" viewBox="0 0 150 70">
+        <rect x="10" y="34" width="120" height="24" rx="6" fill="#fff"/>
+        <path d="M22 34 L38 14 H92 L112 34 Z" fill="#fff"/>
+        <path d="M40 20 H88 L100 34 H32 Z" fill="var(--sky-deep)"/>
+        <circle cx="42" cy="58" r="10" fill="var(--charcoal)"/>
+        <circle cx="42" cy="58" r="4" fill="#fff"/>
+        <circle cx="100" cy="58" r="10" fill="var(--charcoal)"/>
+        <circle cx="100" cy="58" r="4" fill="#fff"/>
+      </svg>
+      <svg width="70" height="70" viewBox="0 0 70 70">
+        <circle cx="16" cy="52" r="10" fill="var(--charcoal)"/>
+        <circle cx="16" cy="52" r="4" fill="#fff"/>
+        <circle cx="54" cy="52" r="10" fill="var(--charcoal)"/>
+        <circle cx="54" cy="52" r="4" fill="#fff"/>
+        <path d="M16 52 L30 30 H40 L54 52" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="34" cy="20" r="7" fill="#fff"/>
+        <path d="M30 30 L40 22" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <svg width="60" height="70" viewBox="0 0 60 70">
+        <rect x="14" y="24" width="32" height="30" rx="4" fill="#fff"/>
+        <rect x="14" y="24" width="32" height="9" fill="var(--sky-deep)"/>
+        <circle cx="22" cy="58" r="7" fill="var(--charcoal)"/>
+        <circle cx="38" cy="58" r="7" fill="var(--charcoal)"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<section id="services">
+  <div class="wrap">
+    <h2 class="section-title">What Ruby moves for you</h2>
+    <p class="section-lead">Three ways to get from A to B, or get something delivered.</p>
+    <div class="cards">
+      <div class="card"><h3>Bike & Keke rides</h3><p>Quick trips around Ogba and Aguda.</p><div class="price">From ₦500</div></div>
+      <div class="card"><h3>Car rides</h3><p>Comfortable rides for longer trips.</p><div class="price">From ₦1,500</div></div>
+      <div class="card"><h3>Errands & delivery</h3><p>Packages, food, shopping runs.</p><div class="price">From ₦800</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="how">
+  <div class="wrap">
+    <h2 class="section-title">How it works</h2>
+    <div class="steps">
+      <div class="step"><div class="step-mark">1</div><h3>Sign up</h3><p>Create your Ruby account once — no need to retype your details every trip.</p></div>
+      <div class="step"><div class="step-mark">2</div><h3>Book a trip</h3><p>Tell us your pickup, drop-off, and what you need.</p></div>
+      <div class="step"><div class="step-mark">3</div><h3>We confirm on WhatsApp</h3><p>We reply within minutes with a rider and price.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="auth-section" id="account">
+  <div class="wrap">
+    <div id="authArea">
+      <h2 class="section-title">Create your Ruby account</h2>
+      <p class="section-lead">Your info is stored securely — passwords are never visible to anyone, including us.</p>
+      <button type="button" class="ghost-btn" id="googleBtn" style="margin-top:20px;">Continue with Google</button>
+
+      <div id="phoneAuthArea" style="margin-top:14px;">
+        <div class="row2" style="max-width:480px;">
+          <div><label for="phoneInput">Phone number</label><input type="tel" id="phoneInput" placeholder="e.g. +2348012345678"></div>
+          <div style="display:flex;align-items:flex-end;"><button type="button" class="ghost-btn" id="sendCodeBtn" style="width:100%;">Send code</button></div>
+        </div>
+        <div id="codeRow" class="row2 hidden" style="max-width:480px;margin-top:10px;">
+          <div><label for="codeInput">Enter the code</label><input type="text" id="codeInput" placeholder="6-digit code"></div>
+          <div style="display:flex;align-items:flex-end;"><button type="button" class="ghost-btn" id="verifyCodeBtn" style="width:100%;">Verify</button></div>
+        </div>
+        <p class="error-msg" id="phoneError"></p>
+        <div id="recaptcha-container" style="margin-top:8px;"></div>
+      </div>
+
+      <div style="text-align:center;color:var(--ink-soft);font-size:13px;margin:14px 0;">— or —</div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabSignup">Sign up</button>
+        <button class="auth-tab" id="tabLogin">Log in</button>
+      </div>
+
+      <form id="signupForm">
+        <div>
+          <label>I am signing up as</label>
+          <div class="row2">
+            <label style="display:flex;align-items:center;gap:8px;font-weight:400;background:#fff;border:1px solid rgba(38,50,65,0.18);border-radius:6px;padding:11px 12px;cursor:pointer;">
+              <input type="radio" name="suRole" value="customer" checked style="width:auto;"> Customer
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-weight:400;background:#fff;border:1px solid rgba(38,50,65,0.18);border-radius:6px;padding:11px 12px;cursor:pointer;">
+              <input type="radio" name="suRole" value="rider" style="width:auto;"> Rider / driver
+            </label>
+          </div>
+        </div>
+        <div class="row2">
+          <div><label for="suName">Full name</label><input type="text" id="suName" required></div>
+          <div><label for="suPhone">Phone number</label><input type="tel" id="suPhone" required></div>
+        </div>
+        <div id="suVehicleRow" class="hidden">
+          <label for="suVehicle">Vehicle type</label>
+          <select id="suVehicle">
+            <option value="Bike/Keke">Bike/Keke</option>
+            <option value="Car">Car</option>
+          </select>
+        </div>
+        <div><label for="suEmail">Email</label><input type="email" id="suEmail" required></div>
+        <div><label for="suPassword">Password (min 6 characters)</label><input type="password" id="suPassword" minlength="6" required></div>
+        <p class="error-msg" id="suError"></p>
+        <button type="submit" class="submit-btn">Create account</button>
+      </form>
+
+      <form id="loginForm" class="hidden">
+        <div><label for="liEmail">Email</label><input type="email" id="liEmail" required></div>
+        <div><label for="liPassword">Password</label><input type="password" id="liPassword" required></div>
+        <p class="error-msg" id="liError"></p>
+        <button type="submit" class="submit-btn">Log in</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="auth-section hidden" id="myAccountSection" style="background:var(--cream);">
+  <div class="wrap">
+    <h2 class="section-title">My account</h2>
+    <p class="section-lead" id="acctSubtitle">Update your details and save addresses you use often.</p>
+
+    <div class="acct-list">
+      <button type="button" class="acct-row" data-panel="panelProfile">👤 Profile <span class="chev">›</span></button>
+      <button type="button" class="acct-row" data-panel="panelAddresses">📍 Saved addresses <span class="chev">›</span></button>
+      <button type="button" class="acct-row" onclick="window.open('https://wa.me/2349164510564','_blank')">💬 Support <span class="chev">›</span></button>
+      <button type="button" class="acct-row" data-panel="panelSafety">🛡️ Safety <span class="chev">›</span></button>
+      <button type="button" class="acct-row" id="acctLogoutRow">🚪 Log out <span class="chev">›</span></button>
+    </div>
+
+    <div id="panelSafety" class="acct-panel hidden">
+      <h3 style="font-size:15px;">Riding safely with Ruby</h3>
+      <ul class="safety-list">
+        <li>Confirm your rider's name matches what's shown on WhatsApp before boarding.</li>
+        <li>Share your trip details with someone you trust before you set off.</li>
+        <li>Sit where you can see the road and keep your phone charged.</li>
+        <li>If anything feels wrong, contact Ruby support immediately via WhatsApp.</li>
+      </ul>
+    </div>
+
+    <div id="panelProfile" class="acct-panel hidden">
+      <form id="profileForm">
+        <h3 style="font-size:15px;">Profile</h3>
+        <div><label for="pfName">Full name</label><input type="text" id="pfName" required></div>
+        <div><label for="pfPhone">Phone number</label><input type="tel" id="pfPhone" required></div>
+        <p class="success-msg" id="pfSuccess">Saved!</p>
+        <button type="submit" class="submit-btn">Save profile</button>
+      </form>
+    </div>
+
+    <div id="panelAddresses" class="acct-panel hidden">
+      <form id="addressForm">
+        <h3 style="font-size:15px;">Saved addresses</h3>
+        <div><label for="addrHome">Home address</label><input type="text" id="addrHome" placeholder="e.g. 12 Ogba road"></div>
+        <div><label for="addrWork">Work address</label><input type="text" id="addrWork" placeholder="e.g. Ikeja along"></div>
+        <p class="success-msg" id="addrSuccess">Saved!</p>
+        <button type="submit" class="submit-btn">Save addresses</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="book hidden" id="bookSection" data-anchor="activityAnchor">
+  <div class="wrap">
+    <h2 class="section-title" style="color:var(--cream);">Book with Ruby</h2>
+    <p class="section-lead">Your name and phone are filled in automatically.</p>
+    <form id="bookingForm">
+      <div>
+        <label for="service">What do you need?</label>
+        <select id="service" required>
+          <option value="">Select one</option>
+          <option value="Bike/Keke ride">Bike/Keke ride</option>
+          <option value="Car ride">Car ride</option>
+          <option value="Errand or delivery">Errand or delivery</option>
+        </select>
+        <p class="fare-estimate" id="fareEstimate"></p>
+      </div>
+      <div class="quick-addr" id="quickAddrRow"></div>
+      <div class="row2">
+        <div><label for="pickup">Pickup location</label><input type="text" id="pickup" required></div>
+        <div><label for="dropoff">Drop-off location</label><input type="text" id="dropoff" required></div>
+      </div>
+      <div><label for="when">When do you need it?</label><input type="text" id="when" required placeholder="e.g. Now, or Today 4pm"></div>
+      <div><label for="notes">Anything else? (optional)</label><textarea id="notes"></textarea></div>
+      <p class="success-msg" id="bookSuccess">Booking saved! Opening WhatsApp to confirm...</p>
+      <button type="submit" class="submit-btn">Send booking</button>
+    </form>
+
+    <h3 style="margin-top:48px;font-size:20px;color:var(--charcoal);">Your trip history</h3>
+    <div class="history-list" id="historyList"></div>
+    <p class="empty-note hidden" id="historyEmpty">No trips yet — your bookings will show up here.</p>
+  </div>
+</section>
+
+<section class="book hidden" id="riderSection">
+  <div class="wrap">
+    <h2 class="section-title" style="color:var(--charcoal);">Available trips</h2>
+    <p class="section-lead">Tap "Claim" to take a trip. First rider to claim it gets it.</p>
+    <div class="history-list" id="availableTripsList"></div>
+    <p class="empty-note hidden" id="availableTripsEmpty">No open trips right now — check back soon.</p>
+
+    <h3 style="margin-top:48px;font-size:20px;color:var(--charcoal);">Your claimed trips</h3>
+    <div class="history-list" id="myTripsList"></div>
+    <p class="empty-note hidden" id="myTripsEmpty">You haven't claimed any trips yet.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="logo" style="color:var(--sky);">Ruby</div>
+  <p>Serving Ogba, Aguda, and nearby areas in Lagos.</p>
+  <p>WhatsApp: <a href="https://wa.me/2349164510564" target="_blank">0916 451 0564</a></p>
+</footer>
+
+<!-- ====== FIREBASE SETUP ======
+  1. Go to https://console.firebase.google.com, create a free project.
+  2. Add a Web App inside the project, copy the config object it gives you.
+  3. Paste it below replacing the placeholder values.
+  4. In the Firebase console: Authentication > Sign-in method > enable "Email/Password".
+  5. In the Firebase console: Firestore Database > Create database (start in production mode),
+     then paste the security rules from README.md into the Rules tab.
+======================================= -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+    onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup,
+    RecaptchaVerifier, signInWithPhoneNumber
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc,
+    query, where, orderBy, getDocs, onSnapshot, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // PASTE YOUR FIREBASE CONFIG HERE
+  const firebaseConfig = {
+    apiKey: "AIzaSyDXJOwGuQ4UVFHh229OMQIQEXyUhv59T-E",
+    authDomain: "ruby-54b40.firebaseapp.com",
+    projectId: "ruby-54b40",
+    storageBucket: "ruby-54b40.firebasestorage.app",
+    messagingSenderId: "539058257239",
+    appId: "1:539058257239:web:97b13446f83304c6119212"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  let currentUser = null;
+  let currentProfile = null;
+  let currentIsRider = false;
+
+  const FARE_ESTIMATES = {
+    "Bike/Keke ride": "Estimated fare: ₦500 – ₦1,200",
+    "Car ride": "Estimated fare: ₦1,500 – ₦3,500",
+    "Errand or delivery": "Estimated fare: ₦800 – ₦2,000"
+  };
+
+  document.getElementById('tabSignup').onclick = () => switchTab('signup');
+  document.getElementById('tabLogin').onclick = () => switchTab('login');
+  document.querySelectorAll('input[name="suRole"]').forEach((r) => {
+    r.addEventListener('change', (e) => {
+      document.getElementById('suVehicleRow').classList.toggle('hidden', e.target.value !== 'rider');
+    });
+  });
+  function switchTab(which){
+    document.getElementById('tabSignup').classList.toggle('active', which==='signup');
+    document.getElementById('tabLogin').classList.toggle('active', which==='login');
+    document.getElementById('signupForm').classList.toggle('hidden', which!=='signup');
+    document.getElementById('loginForm').classList.toggle('hidden', which!=='login');
+  }
+
+  document.getElementById('service').addEventListener('change', (e) => {
+    const est = document.getElementById('fareEstimate');
+    const val = FARE_ESTIMATES[e.target.value];
+    if (val) { est.textContent = val; est.style.display = 'block'; }
+    else { est.style.display = 'none'; }
+  });
+
+  document.getElementById('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errEl = document.getElementById('suError');
+    errEl.style.display = 'none';
+    const name = document.getElementById('suName').value.trim();
+    const phone = document.getElementById('suPhone').value.trim();
+    const email = document.getElementById('suEmail').value.trim();
+    const password = document.getElementById('suPassword').value;
+    const role = document.querySelector('input[name="suRole"]:checked').value;
+    const vehicle = document.getElementById('suVehicle').value;
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(db, "users", cred.user.uid), {
+        name, phone, email, role, homeAddress: "", workAddress: "", createdAt: serverTimestamp()
+      });
+      if (role === 'rider') {
+        await setDoc(doc(db, "riders", cred.user.uid), {
+          name, phone, email, vehicle, createdAt: serverTimestamp()
+        });
+      }
+    } catch (err) {
+      errEl.textContent = friendlyError(err);
+      errEl.style.display = 'block';
+    }
+  });
+
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errEl = document.getElementById('liError');
+    errEl.style.display = 'none';
+    const email = document.getElementById('liEmail').value.trim();
+    const password = document.getElementById('liPassword').value;
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      errEl.textContent = friendlyError(err);
+      errEl.style.display = 'block';
+    }
+  });
+
+  document.getElementById('navLogoutBtn').addEventListener('click', () => signOut(auth));
+
+  // --- Phone sign-in ---
+  let confirmationResult = null;
+  let recaptchaVerifier = null;
+
+  function getRecaptcha(){
+    if (!recaptchaVerifier) {
+      recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'normal' });
+    }
+    return recaptchaVerifier;
+  }
+
+  document.getElementById('sendCodeBtn').addEventListener('click', async () => {
+    const errEl = document.getElementById('phoneError');
+    errEl.style.display = 'none';
+    const phone = document.getElementById('phoneInput').value.trim();
+    if (!phone.startsWith('+')) {
+      errEl.textContent = 'Include your country code, e.g. +234...';
+      errEl.style.display = 'block';
+      return;
+    }
+    try {
+      const verifier = getRecaptcha();
+      confirmationResult = await signInWithPhoneNumber(auth, phone, verifier);
+      document.getElementById('codeRow').classList.remove('hidden');
+    } catch (err) {
+      console.error(err);
+      errEl.textContent = 'Could not send code. Check the number and try again.';
+      errEl.style.display = 'block';
+    }
+  });
+
+  document.getElementById('verifyCodeBtn').addEventListener('click', async () => {
+    const errEl = document.getElementById('phoneError');
+    errEl.style.display = 'none';
+    const code = document.getElementById('codeInput').value.trim();
+    if (!confirmationResult) return;
+    try {
+      const result = await confirmationResult.confirm(code);
+      const ref = doc(db, "users", result.user.uid);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) {
+        await setDoc(ref, {
+          name: "", phone: result.user.phoneNumber || "", email: "",
+          homeAddress: "", workAddress: "", createdAt: serverTimestamp()
+        });
+      }
+    } catch (err) {
+      errEl.textContent = 'Incorrect code. Please try again.';
+      errEl.style.display = 'block';
+    }
+  });
+
+  const googleProvider = new GoogleAuthProvider();
+  document.getElementById('googleBtn').addEventListener('click', async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const ref = doc(db, "users", result.user.uid);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) {
+        await setDoc(ref, {
+          name: result.user.displayName || "",
+          phone: "",
+          email: result.user.email,
+          homeAddress: "",
+          workAddress: "",
+          createdAt: serverTimestamp()
+        });
+      }
+    } catch (err) {
+      console.error("Google sign-in failed:", err);
+    }
+  });
+
+  document.getElementById('profileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!currentUser) return;
+    const name = document.getElementById('pfName').value.trim();
+    const phone = document.getElementById('pfPhone').value.trim();
+    await updateDoc(doc(db, "users", currentUser.uid), { name, phone });
+    currentProfile.name = name; currentProfile.phone = phone;
+    const s = document.getElementById('pfSuccess');
+    s.style.display = 'block'; setTimeout(() => s.style.display = 'none', 2000);
+  });
+
+  document.getElementById('addressForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!currentUser) return;
+    const home = document.getElementById('addrHome').value.trim();
+    const work = document.getElementById('addrWork').value.trim();
+    await updateDoc(doc(db, "users", currentUser.uid), { homeAddress: home, workAddress: work });
+    currentProfile.homeAddress = home; currentProfile.workAddress = work;
+    renderQuickAddresses();
+    const s = document.getElementById('addrSuccess');
+    s.style.display = 'block'; setTimeout(() => s.style.display = 'none', 2000);
+  });
+
+  function renderQuickAddresses(){
+    const row = document.getElementById('quickAddrRow');
+    row.innerHTML = '';
+    if (!currentProfile) return;
+    if (currentProfile.homeAddress) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'ghost-btn';
+      b.textContent = '🏠 Use Home as pickup';
+      b.onclick = () => document.getElementById('pickup').value = currentProfile.homeAddress;
+      row.appendChild(b);
+    }
+    if (currentProfile.workAddress) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'ghost-btn';
+      b.textContent = '💼 Use Work as drop-off';
+      b.onclick = () => document.getElementById('dropoff').value = currentProfile.workAddress;
+      row.appendChild(b);
+    }
+  }
+
+  onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    const authArea = document.getElementById('authArea');
+    const bookSection = document.getElementById('bookSection');
+    const riderSection = document.getElementById('riderSection');
+    const myAccountSection = document.getElementById('myAccountSection');
+    const navAccountBtn = document.getElementById('navAccountBtn');
+    const navLogoutBtn = document.getElementById('navLogoutBtn');
+    const welcomeBar = document.getElementById('welcomeBar');
+
+    if (user) {
+      authArea.classList.add('hidden');
+      myAccountSection.classList.remove('hidden');
+      navAccountBtn.classList.add('hidden');
+      navLogoutBtn.classList.remove('hidden');
+
+      const snap = await getDoc(doc(db, "users", user.uid));
+      currentProfile = snap.exists() ? snap.data() : {};
+      currentIsRider = currentProfile.role === 'rider';
+      document.getElementById('pfName').value = currentProfile.name || '';
+      document.getElementById('pfPhone').value = currentProfile.phone || '';
+      document.getElementById('addrHome').value = currentProfile.homeAddress || '';
+      document.getElementById('addrWork').value = currentProfile.workAddress || '';
+
+      welcomeBar.style.display = 'block';
+      welcomeBar.textContent = currentIsRider
+        ? `Welcome back, rider! Signed in as ${user.email || user.phoneNumber}`
+        : `Welcome back! You're signed in as ${user.email || user.phoneNumber}`;
+
+      if (currentIsRider) {
+        bookSection.classList.add('hidden');
+        riderSection.classList.remove('hidden');
+        loadAvailableTrips();
+        loadMyTrips();
+      } else {
+        riderSection.classList.add('hidden');
+        bookSection.classList.remove('hidden');
+        renderQuickAddresses();
+        loadTripHistory();
+      }
+    } else {
+      authArea.classList.remove('hidden');
+      bookSection.classList.add('hidden');
+      riderSection.classList.add('hidden');
+      myAccountSection.classList.add('hidden');
+      navAccountBtn.classList.remove('hidden');
+      navLogoutBtn.classList.add('hidden');
+      welcomeBar.style.display = 'none';
+      currentProfile = null;
+      currentIsRider = false;
+    }
+  });
+
+  document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!currentUser) return;
+    const service = document.getElementById('service').value;
+    const pickup = document.getElementById('pickup').value;
+    const dropoff = document.getElementById('dropoff').value;
+    const when = document.getElementById('when').value;
+    const notes = document.getElementById('notes').value;
+
+    await addDoc(collection(db, "bookings"), {
+      uid: currentUser.uid,
+      email: currentUser.email,
+      service, pickup, dropoff, when, notes,
+      status: "pending",
+      rating: null,
+      createdAt: serverTimestamp()
+    });
+
+    document.getElementById('bookSuccess').style.display = 'block';
+
+    let message = `Hi Ruby, I'd like to book a trip.%0A%0A`;
+    message += `Service: ${service}%0A`;
+    message += `Pickup: ${pickup}%0A`;
+    message += `Drop-off: ${dropoff}%0A`;
+    message += `When: ${when}%0A`;
+    if (notes) message += `Notes: ${notes}%0A`;
+    setTimeout(() => {
+      window.open(`https://wa.me/2349164510564?text=${message}`, '_blank');
+    }, 800);
+
+    e.target.reset();
+    document.getElementById('fareEstimate').style.display = 'none';
+    loadTripHistory();
+  });
+
+  async function loadTripHistory(){
+    if (!currentUser) return;
+    const listEl = document.getElementById('historyList');
+    const emptyEl = document.getElementById('historyEmpty');
+    listEl.innerHTML = '';
+    try {
+      const q = query(
+        collection(db, "bookings"),
+        where("uid", "==", currentUser.uid),
+        orderBy("createdAt", "desc")
+      );
+      const snap = await getDocs(q);
+      if (snap.empty) { emptyEl.classList.remove('hidden'); return; }
+      emptyEl.classList.add('hidden');
+      snap.forEach((docSnap) => {
+        const b = docSnap.data();
+        const card = document.createElement('div');
+        card.className = 'history-card';
+        const statusLabel = b.status ? b.status.charAt(0).toUpperCase() + b.status.slice(1) : 'Pending';
+        card.innerHTML = `
+          <div class="history-top">
+            <span class="history-service">${escapeHtml(b.service || '')}</span>
+            <span class="history-status">${escapeHtml(statusLabel)}</span>
+          </div>
+          <div class="history-route">${escapeHtml(b.pickup)} → ${escapeHtml(b.dropoff)} &middot; ${escapeHtml(b.when)}</div>
+          ${b.riderName ? `<div class="history-route">Rider: ${escapeHtml(b.riderName)}</div>` : ''}
+        `;
+        const starsWrap = document.createElement('div');
+        starsWrap.className = 'stars';
+        for (let i = 1; i <= 5; i++) {
+          const star = document.createElement('span');
+          star.textContent = '★';
+          star.className = 'star' + (b.rating && i <= b.rating ? ' filled' : '') + (b.rating ? ' locked' : '');
+          if (!b.rating) {
+            star.addEventListener('click', async () => {
+              await updateDoc(doc(db, "bookings", docSnap.id), { rating: i });
+              loadTripHistory();
+            });
+          }
+          starsWrap.appendChild(star);
+        }
+        card.appendChild(starsWrap);
+        if (b.riderUid) {
+          attachTrackMap(card, docSnap.id);
+          attachChat(card, docSnap.id);
+        }
+        listEl.appendChild(card);
+      });
+    } catch (err) {
+      // Firestore may ask for a composite index the first time this query runs.
+      // Open the browser console (F12) — Firestore prints a direct link to create it with one click.
+      console.error("Trip history query needs an index. Check console for a Firestore link:", err);
+    }
+  }
+
+  async function loadAvailableTrips(){
+    const listEl = document.getElementById('availableTripsList');
+    const emptyEl = document.getElementById('availableTripsEmpty');
+    listEl.innerHTML = '';
+    try {
+      const q = query(collection(db, "bookings"), where("status", "==", "pending"), orderBy("createdAt", "desc"));
+      const snap = await getDocs(q);
+      if (snap.empty) { emptyEl.classList.remove('hidden'); return; }
+      emptyEl.classList.add('hidden');
+      snap.forEach((docSnap) => {
+        const b = docSnap.data();
+        const card = document.createElement('div');
+        card.className = 'history-card';
+        card.innerHTML = `
+          <div class="history-top">
+            <span class="history-service">${escapeHtml(b.service || '')}</span>
+          </div>
+          <div class="history-route">${escapeHtml(b.pickup)} → ${escapeHtml(b.dropoff)} &middot; ${escapeHtml(b.when)}</div>
+        `;
+        const claimBtn = document.createElement('button');
+        claimBtn.type = 'button'; claimBtn.className = 'submit-btn'; claimBtn.style.marginTop = '10px';
+        claimBtn.textContent = 'Claim this trip';
+        claimBtn.addEventListener('click', () => claimTrip(docSnap.id));
+        card.appendChild(claimBtn);
+        listEl.appendChild(card);
+      });
+    } catch (err) {
+      console.error("Available trips query needs an index. Check console for a Firestore link:", err);
+    }
+  }
+
+  async function claimTrip(bookingId){
+    if (!currentUser) return;
+    await updateDoc(doc(db, "bookings", bookingId), {
+      status: "claimed",
+      riderUid: currentUser.uid,
+      riderName: (currentProfile && currentProfile.name) || 'Your rider'
+    });
+    loadAvailableTrips();
+    loadMyTrips();
+  }
+
+  let watchId = null;
+  function startSharingLocation(bookingId, btn){
+    if (!navigator.geolocation) { alert('Location is not supported on this device/browser.'); return; }
+    if (watchId) navigator.geolocation.clearWatch(watchId);
+    watchId = navigator.geolocation.watchPosition(async (pos) => {
+      await updateDoc(doc(db, "bookings", bookingId), {
+        riderLat: pos.coords.latitude,
+        riderLng: pos.coords.longitude,
+        status: "in_progress"
+      });
+    }, (err) => console.error(err), { enableHighAccuracy: true });
+    btn.textContent = 'Sharing location…';
+    btn.disabled = true;
+  }
+
+  async function markTripCompleted(bookingId){
+    if (watchId) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+    await updateDoc(doc(db, "bookings", bookingId), { status: "completed" });
+    loadMyTrips();
+  }
+
+  async function loadMyTrips(){
+    if (!currentUser) return;
+    const listEl = document.getElementById('myTripsList');
+    const emptyEl = document.getElementById('myTripsEmpty');
+    listEl.innerHTML = '';
+    try {
+      const q = query(collection(db, "bookings"), where("riderUid", "==", currentUser.uid), orderBy("createdAt", "desc"));
+      const snap = await getDocs(q);
+      if (snap.empty) { emptyEl.classList.remove('hidden'); return; }
+      emptyEl.classList.add('hidden');
+      snap.forEach((docSnap) => {
+        const b = docSnap.data();
+        const card = document.createElement('div');
+        card.className = 'history-card';
+        const statusLabel = b.status ? b.status.charAt(0).toUpperCase() + b.status.slice(1) : 'Claimed';
+        card.innerHTML = `
+          <div class="history-top">
+            <span class="history-service">${escapeHtml(b.service || '')}</span>
+            <span class="history-status">${escapeHtml(statusLabel)}</span>
+          </div>
+          <div class="history-route">${escapeHtml(b.pickup)} → ${escapeHtml(b.dropoff)} &middot; ${escapeHtml(b.when)}</div>
+        `;
+        if (b.status !== 'completed') {
+          const shareBtn = document.createElement('button');
+          shareBtn.type = 'button'; shareBtn.className = 'ghost-btn'; shareBtn.style.marginTop = '10px'; shareBtn.style.marginRight = '8px';
+          shareBtn.textContent = b.status === 'in_progress' ? 'Sharing location…' : 'Share my location';
+          if (b.status === 'in_progress') shareBtn.disabled = true;
+          shareBtn.addEventListener('click', () => startSharingLocation(docSnap.id, shareBtn));
+          card.appendChild(shareBtn);
+
+          const doneBtn = document.createElement('button');
+          doneBtn.type = 'button'; doneBtn.className = 'submit-btn'; doneBtn.style.marginTop = '10px';
+          doneBtn.textContent = 'Mark trip completed';
+          doneBtn.addEventListener('click', () => markTripCompleted(docSnap.id));
+          card.appendChild(doneBtn);
+        }
+        attachChat(card, docSnap.id);
+        listEl.appendChild(card);
+      });
+    } catch (err) {
+      console.error("My trips query needs an index. Check console for a Firestore link:", err);
+    }
+  }
+
+  function attachChat(container, bookingId){
+    const toggle = document.createElement('button');
+    toggle.type = 'button'; toggle.className = 'chat-toggle';
+    toggle.textContent = 'Chat';
+    const panel = document.createElement('div');
+    panel.className = 'chat-panel hidden';
+    panel.innerHTML = `<div class="chat-messages"></div><div class="chat-row"><input type="text" placeholder="Type a message..."><button type="button">Send</button></div>`;
+    toggle.addEventListener('click', () => {
+      panel.classList.toggle('hidden');
+      if (!panel.classList.contains('hidden')) {
+        const msgBox = panel.querySelector('.chat-messages');
+        onSnapshot(query(collection(db, "bookings", bookingId, "messages"), orderBy("createdAt", "asc")), (snap) => {
+          msgBox.innerHTML = '';
+          snap.forEach((m) => {
+            const msg = m.data();
+            const bubble = document.createElement('div');
+            bubble.className = 'chat-bubble' + (msg.senderUid === currentUser.uid ? ' mine' : '');
+            bubble.textContent = msg.text;
+            msgBox.appendChild(bubble);
+          });
+          msgBox.scrollTop = msgBox.scrollHeight;
+        });
+      }
+    });
+    const input = panel.querySelector('input');
+    const sendBtn = panel.querySelector('button');
+    const send = async () => {
+      const text = input.value.trim();
+      if (!text) return;
+      await addDoc(collection(db, "bookings", bookingId, "messages"), {
+        senderUid: currentUser.uid,
+        senderName: (currentProfile && currentProfile.name) || '',
+        text,
+        createdAt: serverTimestamp()
+      });
+      input.value = '';
+    };
+    sendBtn.addEventListener('click', send);
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') send(); });
+    container.appendChild(toggle);
+    container.appendChild(panel);
+  }
+
+  function attachTrackMap(container, bookingId){
+    const toggle = document.createElement('button');
+    toggle.type = 'button'; toggle.className = 'chat-toggle';
+    toggle.textContent = 'Track your ride';
+    const mapDiv = document.createElement('div');
+    mapDiv.className = 'hidden';
+    mapDiv.style.cssText = 'height:200px;border-radius:8px;margin-top:10px;background:var(--sand);';
+    let map, marker, unsub;
+    toggle.addEventListener('click', () => {
+      mapDiv.classList.toggle('hidden');
+      if (!mapDiv.classList.contains('hidden')) {
+        if (typeof google === 'undefined') {
+          mapDiv.textContent = 'Live map needs a Google Maps API key set up (see README).';
+          mapDiv.style.display = 'flex'; mapDiv.style.alignItems = 'center'; mapDiv.style.justifyContent = 'center';
+          mapDiv.style.fontSize = '13px'; mapDiv.style.color = 'var(--ink-soft)'; mapDiv.style.padding = '10px';
+          return;
+        }
+        if (!map) {
+          map = new google.maps.Map(mapDiv, { zoom: 14, center: { lat: 6.6333, lng: 3.3333 } });
+        }
+        if (!unsub) {
+          unsub = onSnapshot(doc(db, "bookings", bookingId), (snap) => {
+            const b = snap.data();
+            if (b && b.riderLat && b.riderLng) {
+              const pos = { lat: b.riderLat, lng: b.riderLng };
+              if (!marker) marker = new google.maps.Marker({ position: pos, map, title: 'Your rider' });
+              else marker.setPosition(pos);
+              map.setCenter(pos);
+            }
+          });
+        }
+      }
+    });
+    container.appendChild(toggle);
+    container.appendChild(mapDiv);
+  }
+
+
+    if (!str) return '';
+    return str.replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  function friendlyError(err){
+    const code = err.code || '';
+    if (code.includes('email-already-in-use')) return 'That email is already registered — try logging in instead.';
+    if (code.includes('weak-password')) return 'Password should be at least 6 characters.';
+    if (code.includes('invalid-email')) return 'Please enter a valid email address.';
+    if (code.includes('user-not-found') || code.includes('wrong-password') || code.includes('invalid-credential')) return 'Incorrect email or password.';
+    return 'Something went wrong. Please try again.';
+  }
+
+  // --- Bottom tab navigation ---
+  document.querySelectorAll('.tab-item').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const target = tab.dataset.target;
+      let el;
+      if (target === 'topAnchor') {
+        el = document.getElementById('topAnchor');
+      } else if (target === 'activityAnchor') {
+        el = currentIsRider ? document.getElementById('riderSection') : document.getElementById('bookSection');
+        if (!currentUser) el = document.getElementById('account');
+      } else if (target === 'account') {
+        el = currentUser ? document.getElementById('myAccountSection') : document.getElementById('account');
+      }
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  // --- Account menu list toggle ---
+  document.querySelectorAll('.acct-row[data-panel]').forEach((row) => {
+    row.addEventListener('click', () => {
+      const panel = document.getElementById(row.dataset.panel);
+      const isOpen = !panel.classList.contains('hidden');
+      document.querySelectorAll('.acct-panel').forEach(p => p.classList.add('hidden'));
+      if (!isOpen) panel.classList.remove('hidden');
+    });
+  });
+  document.getElementById('acctLogoutRow').addEventListener('click', () => signOut(auth));
+</script>
+
+<nav class="bottom-tabs" id="bottomTabs">
+  <button class="tab-item active" data-target="topAnchor">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>
+    Home
+  </button>
+  <button class="tab-item" data-target="activityAnchor">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 10h8M8 14h5"/></svg>
+    Activity
+  </button>
+  <button class="tab-item" data-target="account">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+    Account
+  </button>
+</nav>
+
+</body>
+</html>
